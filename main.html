@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surepay Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Base Dark Mode Colors */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Dark background */
+            min-height: 100vh;
+            color: #e5e7eb; /* Light text color (gray-200) */
+        }
+        .card {
+            background-color: #1e1e1e; /* Darker card background (gray-900 equivalent) */
+            border-radius: 12px;
+            box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.4), 0 3px 6px -2px rgba(0, 0, 0, 0.3); /* Darker shadows */
+            transition: all 0.3s ease;
+        }
+        /* Make modal/card content scrollable on small screens */
+        .card { max-width: 100%; }
+        .card .content-scroll { max-height: calc(100vh - 120px); overflow: auto; }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Emerald Green for Primary Actions */
+        .primary-green {
+            color: #059669; /* Emerald Green Text (Green-600) */
+        }
+        .task-btn, .bg-green-600 {
+            background-color: #059669 !important; /* Emerald Green */
+            color: white;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        /* Ensure action buttons behave on small screens */
+        .task-btn { min-width: 0; }
+        .task-btn.full-mobile { width: auto; }
+        .task-btn:hover:not(:disabled), .hover\\:bg-green-700:hover {
+            background-color: #047857 !important; /* Darker Emerald Green */
+        }
+        
+        /* Ad Block in Dark Mode */
+        .ad-block {
+            border: 2px dashed #34d399; /* Lighter Emerald dashed border */
+            background-color: #1f2937; /* Darker background for visibility */
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            body { font-size: 14px; }
+            header h1 { font-size: 1.125rem; }
+            .card { padding: 12px; border-radius: 10px; }
+            .ad-block { min-height: 120px; padding: 12px; }
+            /* Stack task action areas vertically on small screens */
+            .task-item .flex { flex-direction: column; align-items: stretch; }
+            .task-item .flex .primary-green { margin-top: 8px; }
+            /* Make social directory buttons full width */
+            .task-item a, .task-item .task-btn { width: 100%; display: inline-flex; justify-content: center; }
+            /* Ensure flex-1 children don't overflow */
+            .flex-1 { min-width: 0; }
+            /* Dialog card fit */
+            #socialTasksDialog .card { max-width: 92%; margin: 0 8px; }
+            /* Modal content scroll for tall dialogs */
+            #socialTasksDialog .card, #payoutModal .card, #referralModal .card { max-height: calc(100vh - 80px); overflow: auto; }
+        }
+
+        @media (min-width: 1024px) {
+            body { font-size: 16px; }
+            .card { padding: 18px; }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900">
+
+    <header class="bg-gray-800 shadow-xl py-4 px-6 md:px-12">
+        <div class="flex justify-between items-center">
+            
+            <div class="flex items-center space-x-2"> 
+                <img 
+                    src="IMG-20251018-WA0004.jpg" 
+                    onerror="this.onerror=null;this.src='https://placehold.co/28x28/16a34a/ffffff?text=SP';" 
+                    alt="Sure Pay Logo" 
+                    class="w-7 h-7 rounded-full object-cover"
+                >
+                <h1 class="text-2xl font-bold text-white">Surepay Dashboard</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="openReferralModal()" class="primary-green hover:text-green-500 transition duration-300 font-medium">Refer & Earn 💰</button>
+                <span class="text-gray-400 font-medium" id="welcomeMessage">Welcome, User!</span>
+                <button onclick="logout()" class="primary-green hover:text-green-500 transition duration-300 font-medium">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            
+            <div class="card p-6 text-center relative col-span-1 sm:col-span-2 lg:col-span-1 flex flex-col justify-between">
+                <div>
+                    <p class="text-sm primary-green font-medium">Available to Withdraw</p>
+                    <p id="totalEarnings" class="text-3xl font-bold text-white mt-2">₦0.00</p>
+                </div>
+                <button id="payoutButton" onclick="handlePayoutAttempt()" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition duration-300 shadow-lg disabled:bg-gray-700 disabled:shadow-none">
+                    Cash Out Now
+                </button>
+            </div>
+            
+            <div class="card p-6 text-center">
+                <p class="text-sm primary-green font-medium">Lifetime Payouts (₦)</p>
+                <p id="lifetimePayouts" class="text-3xl font-bold text-white mt-2">₦0.00</p>
+            </div>
+
+            <div class="card p-6 text-center">
+                <p class="text-sm primary-green font-medium">Ad Engagements</p>
+                <p id="surveysCompleted" class="text-3xl font-bold text-white mt-2">0</p>
+            </div>
+            
+            <div class="card p-6 text-center">
+                <p class="text-sm primary-green font-medium">Pending Balance</p>
+                <p id="pendingBalance" class="text-3xl font-bold text-white mt-2">₦3,250.00</p>
+            </div>
+
+            <div class="card p-6 text-center">
+                <p class="text-sm primary-green font-medium">Successful Referrals</p>
+                <p id="successfulReferrals" class="text-3xl font-bold text-white mt-2">0</p>
+            </div>
+        </section>
+
+        <section class="card p-6 mb-8 ad-block">
+            <div class="text-gray-200">
+                <p class="text-xl font-semibold mb-2 text-white">Sponsored Content / High-Value Ad Unit</p>
+                <p class="text-sm primary-green">Your revenue comes from impressions and clicks on ads shown in this space and during tasks.</p>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943" crossorigin="anonymous"></script>
+            </div>
+        </section>
+
+        <section class="card p-6">
+            <h2 class="text-2xl font-bold text-white mb-6 border-b pb-3 border-gray-700">Revenue Generation Tasks</h2>
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 border-b border-gray-700">
+                <div>
+                    <h3 class="text-lg font-medium text-white">Complete Sponsored Survey</h3>
+                    <p class="text-sm text-gray-400">Time to complete: 10 mins (High CPM value)</p>
+                </div>
+                <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+                    <span class="primary-green font-semibold">+₦750.00</span>
+                    <button id="task1-btn" class="task-btn" onclick="startTask(this, 750.00, 'survey')">Start</button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 border-b border-gray-700">
+                <div>
+                    <h3 class="text-lg font-medium text-white">View High-Retention Video Ads</h3>
+                    <p class="text-sm text-gray-400">Time to complete: 5 mins (Guaranteed impression revenue)</p>
+                </div>
+                <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+                    <span class="primary-green font-semibold">+₦700.00</span>
+                    <button id="task2-btn" class="task-btn" onclick="startTask(this, 700.00, 'video')">Start</button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 last:border-b-0">
+                <div>
+                    <h3 class="text-lg font-medium text-white">Complete Social Media Tasks</h3>
+                    <p class="text-sm text-gray-400">Follow and engage with SurePay on social media (Multiple tasks)</p>
+                </div>
+                <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+                    <span class="primary-green font-semibold">+₦300.00/task</span>
+                    <button id="task3-btn" class="task-btn" onclick="openSocialTasksDialog()">View Tasks</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Social Media Tasks Dialog - Moved outside the section for proper z-index stacking -->
+        <div id="socialTasksDialog" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div class="card p-6 rounded-xl shadow-2xl w-full max-w-lg relative"> <!-- Added relative positioning -->
+                <h3 class="text-xl font-bold primary-green mb-4 border-b pb-2 border-gray-700">Social Media Tasks</h3>
+                    
+                    <div class="space-y-4 mb-6">
+                        <!-- Facebook Task -->
+                            <div class="task-item border border-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-white font-medium">Follow SurePay on Facebook</h4>
+                                    <p class="text-sm text-gray-400">Join our community and stay updated</p>
+                                </div>
+                                <span class="primary-green font-semibold">+₦300.00</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="https://www.facebook.com/profile.php?id=61583153694224" target="_blank" class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition duration-150">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.001 2.002c-5.522 0-9.999 4.477-9.999 9.999 0 4.99 3.656 9.126 8.437 9.879v-6.988h-2.54v-2.891h2.54V9.798c0-2.508 1.493-3.891 3.776-3.891 1.094 0 2.24.195 2.24.195v2.459h-1.264c-1.24 0-1.628.772-1.628 1.563v1.875h2.771l-.443 2.891h-2.328v6.988C18.344 21.129 22 16.992 22 12.001c0-5.522-4.477-9.999-9.999-9.999z"/>
+                                    </svg>
+                                    facebook.com/surepay
+                                </a>
+                            </div>
+                        </div>                        <!-- TikTok Task -->
+                        <div class="task-item border border-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-white font-medium">Follow SurePay on TikTok</h4>
+                                    <p class="text-sm text-gray-400">Watch our latest videos and join the fun</p>
+                                </div>
+                                <span class="primary-green font-semibold">+₦300.00</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="https://www.tiktok.com/@sure_pay69? _ t=ZS-90xHKyAao7D& _ r=1" target="_blank" class="flex items-center justify-center bg-black hover:bg-gray-900 text-white px-4 py-3 rounded-lg text-sm font-medium transition duration-150">
+                                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                                    </svg>
+                                    tiktok.com/@surepay
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Instagram Task -->
+                        <div class="task-item border border-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-white font-medium">Follow SurePay on Instagram</h4>
+                                    <p class="text-sm text-gray-400">Check out our latest posts and stories</p>
+                                </div>
+                                <span class="primary-green font-semibold">+₦300.00</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="https://www.instagram.com/sure_pay66?igsh=MXZja29mcWJndWcyYw==" target="_blank" class="flex items-center justify-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition duration-150">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 6c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 12c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                                    </svg>
+                                    instagram.com/surepay
+                                </a>
+                            </div>
+                        </div>
+                        <!-- YouTube Task -->
+                        <div class="task-item border border-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-white font-medium">Subscribe to SurePay on YouTube</h4>
+                                    <p class="text-sm text-gray-400">Watch our tutorials and latest updates</p>
+                                </div>
+                                <span class="primary-green font-semibold">+₦300.00</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="https://youtube.com/@surepay-69?si=0CC29wD2pwCTwlIe" target="_blank" rel="noopener" class="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition duration-150">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                    youtube.com/@surepay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="closeSocialTasksDialog()" class="px-4 py-2 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition duration-150">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </section>
+
+    </main>
+    
+    <div id="payoutModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="card p-6 rounded-xl shadow-2xl w-full max-w-sm">
+            <h3 id="modalTitle" class="text-xl font-bold primary-green mb-4 border-b pb-2 border-gray-700">Confirm Payout</h3>
+
+            <div id="payoutMethodStep">
+                <p id="modalMessage" class="text-gray-300 mb-6">Are you sure you want to withdraw your current earnings of <span id="payoutAmount" class="font-bold text-lg primary-green"></span>?</p>
+                
+                <div id="payoutMethodContainer" class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Payout Method:</label>
+                    <select class="w-full p-2 border border-gray-700 rounded-lg bg-gray-900 text-gray-200 focus:ring-green-500 focus:border-green-500" id="payoutMethodSelect">
+                        <option>PayPal (Instant)</option>
+                        <option>Bank Transfer (3-5 Days)</option>
+                        </select>
+                </div>
+                
+                <div id="nextStepActions" class="flex justify-end space-x-3">
+                    <button onclick="closeModal()" class="px-4 py-2 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition duration-150">Cancel</button>
+                    <button id="nextBtn" onclick="goToDetailsStep()" class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium transition duration-150">Next: Enter Details</button>
+                </div>
+            </div>
+            
+            <div id="payoutDetailsStep" class="hidden">
+                <p class="text-gray-300 mb-4 text-sm">Please provide your details for <span id="selectedMethodDisplay" class="font-bold primary-green">Bank Transfer</span> to process your **₦<span id="payoutAmount2"></span>** withdrawal.</p>
+                
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label id="accountLabel" for="accountInput" class="block text-sm font-medium text-gray-300 mb-1">Account Name (As registered in bank):</label>
+                        <input type="text" id="accountInput" class="w-full p-2 border border-gray-700 rounded-lg bg-gray-900 text-gray-200 focus:ring-green-500 focus:border-green-500" placeholder="e.g., John Doe Chukwu">
+                    </div>
+                    <div>
+                        <label id="detailsLabel" for="detailsInput" class="block text-sm font-medium text-gray-300 mb-1">Account Number & Bank Name:</label>
+                        <input type="text" id="detailsInput" class="w-full p-2 border border-gray-700 rounded-lg bg-gray-900 text-gray-200 focus:ring-green-500 focus:border-green-500" placeholder="e.g., 0123456789 (First Bank)">
+                    </div>
+                </div>
+
+                <div id="modalActions" class="flex justify-between space-x-3">
+                    <button onclick="goBackToMethodStep()" class="px-4 py-2 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition duration-150">Back</button>
+                    <button id="confirmBtn" onclick="confirmPayout()" class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium transition duration-150">Confirm Withdraw</button>
+                </div>
+            </div>
+
+            <div id="modalStatus" class="hidden mt-4 p-3 rounded-lg text-sm font-medium text-center bg-green-900 text-green-300"></div>
+        </div>
+    </div>
+    <div id="referralModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="card p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-xl font-bold primary-green mb-4 border-b pb-2 border-gray-700">Refer & Earn ₦1,000! 🤝</h3>
+            
+            <div class="mb-4 p-3 bg-gray-900 rounded-lg">
+                <p class="text-sm text-gray-400">Your Referral Earnings Balance:</p>
+                <p id="referralBalanceDisplay" class="text-3xl font-bold primary-green mt-1">₦0.00</p>
+            </div>
+            
+            <p class="text-gray-300 mb-4">Share your unique referral link to invite friends. You'll earn **₦1,000.00** when they successfully join and complete their first task.</p>
+            
+            <div class="mb-6">
+                <label for="referralLink" class="block text-sm font-medium text-gray-300 mb-1">Your Referral Link:</label>
+                <div class="flex">
+                    <input type="text" id="referralLink" readonly value="https://surepay.io/ref/loading..." class="w-full p-3 border border-gray-700 rounded-l-lg bg-gray-900 font-mono text-sm focus:ring-green-500 focus:border-green-500 text-gray-200">
+                    <button onclick="copyReferralLink()" class="task-btn rounded-r-lg rounded-l-none flex items-center justify-center px-4 py-3" id="copyBtn">
+                        <span id="copyBtnText">Copy</span>
+                    </button>
+                </div>
+                <p id="copyStatus" class="text-xs mt-2 primary-green hidden">Link copied!</p>
+            </div>
+
+            <div id="referredUsersContainer" class="mt-6">
+                <h4 class="text-lg font-semibold text-white mb-2 border-t pt-3 border-gray-700">Successful Referrals: (<span id="referredCount">0</span>)</h4>
+                <ul id="referredUsersList" class="bg-gray-900 p-3 rounded-lg max-h-40 overflow-y-auto">
+                    </ul>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeReferralModal()" class="px-4 py-2 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition duration-150">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, increment, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set log level to Debug for visibility in console
+        setLogLevel('Debug');
+
+        // --- GLOBAL SETUP ---
+        const CURRENCY_SYMBOL = '₦';
+        const WITHDRAWAL_THRESHOLD = 70000.00; // Updated minimum payout amount in Naira
+        const REFERRAL_BONUS = 1000.00; // Referral bonus amount
+        const PAYOUT_EMAIL = 'pays8771@gmail.com'; // NEW: Payout submission email mock
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'surepay-ad-farm';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app, db, auth;
+        let userId = null;
+        let currentEarnings = 0.00; 
+
+        const WELCOME_EL = document.getElementById('welcomeMessage');
+        
+        // References for dynamic UI updates
+        const METRIC_ELS = {
+            totalEarnings: document.getElementById('totalEarnings'), 
+            lifetimePayouts: document.getElementById('lifetimePayouts'), 
+            surveysCompleted: document.getElementById('surveysCompleted'),
+            pendingBalance: document.getElementById('pendingBalance'),
+            successfulReferrals: document.getElementById('successfulReferrals'),
+            referralBalanceDisplay: document.getElementById('referralBalanceDisplay'), // New element
+            referredUsersList: document.getElementById('referredUsersList'), // New element
+            referredCount: document.getElementById('referredCount'), // New element
+            referredUsersContainer: document.getElementById('referredUsersContainer') // New element
+        };
+
+        // References for Modal elements
+        const PAYOUT_MODAL = document.getElementById('payoutModal');
+        const PAYOUT_BUTTON = document.getElementById('payoutButton');
+        const PAYOUT_AMOUNT_EL = document.getElementById('payoutAmount');
+        const MODAL_TITLE = document.getElementById('modalTitle');
+        const MODAL_MESSAGE = document.getElementById('modalMessage');
+        const MODAL_ACTIONS = document.getElementById('modalActions');
+        const MODAL_STATUS = document.getElementById('modalStatus');
+        const CONFIRM_BTN = document.getElementById('confirmBtn');
+        const PAYOUT_METHOD_CONTAINER = document.getElementById('payoutMethodContainer');
+
+        // NEW: References for Multi-Step Payout Modal elements
+        const PAYOUT_METHOD_STEP = document.getElementById('payoutMethodStep');
+        const PAYOUT_DETAILS_STEP = document.getElementById('payoutDetailsStep');
+        const PAYOUT_METHOD_SELECT = document.getElementById('payoutMethodSelect');
+        const NEXT_BTN = document.getElementById('nextBtn');
+        const PAYOUT_AMOUNT_EL2 = document.getElementById('payoutAmount2'); // For details screen
+        const SELECTED_METHOD_DISPLAY = document.getElementById('selectedMethodDisplay');
+        const ACCOUNT_INPUT = document.getElementById('accountInput');
+        const DETAILS_INPUT = document.getElementById('detailsInput');
+        const ACCOUNT_LABEL = document.getElementById('accountLabel');
+        const DETAILS_LABEL = document.getElementById('detailsLabel');
+
+
+        // References for Referral Modal elements
+        const REFERRAL_MODAL = document.getElementById('referralModal');
+        const REFERRAL_LINK_EL = document.getElementById('referralLink');
+        const COPY_BTN = document.getElementById('copyBtn');
+        const COPY_BTN_TEXT = document.getElementById('copyBtnText');
+        const COPY_STATUS_EL = document.getElementById('copyStatus');
+
+
+        // --- UTILITY FUNCTIONS ---
+
+        /** Formats a number as a currency string. */
+        function formatCurrency(amount) {
+            return CURRENCY_SYMBOL + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        /** Updates the main metrics display and referral modal content. */
+        function updateMetrics(data) {
+            currentEarnings = data.availableToWithdraw || 0.00;
+            const canWithdraw = currentEarnings >= WITHDRAWAL_THRESHOLD;
+            const referredUsers = data.referredUsers || []; // Array of referred usernames
+            const referralBalance = data.referralBalance || 0.00; // New metric
+
+            METRIC_ELS.totalEarnings.textContent = formatCurrency(currentEarnings);
+            METRIC_ELS.lifetimePayouts.textContent = formatCurrency(data.lifetimePayouts || 0.00);
+            METRIC_ELS.surveysCompleted.textContent = (data.adEngagements || 0).toLocaleString();
+            METRIC_ELS.pendingBalance.textContent = formatCurrency(data.pendingBalance || 0.00);
+            METRIC_ELS.successfulReferrals.textContent = referredUsers.length.toLocaleString(); 
+
+            // --- Referral Modal Updates ---
+            METRIC_ELS.referralBalanceDisplay.textContent = formatCurrency(referralBalance); // Display referral balance
+            METRIC_ELS.referredCount.textContent = referredUsers.length;
+
+            if (referredUsers.length === 0) {
+                // If no referrals, hide the list container and set referral balance to zero
+                METRIC_ELS.referredUsersContainer.style.display = 'none';
+                METRIC_ELS.referralBalanceDisplay.textContent = formatCurrency(0.00); 
+            } else {
+                METRIC_ELS.referredUsersContainer.style.display = 'block';
+                METRIC_ELS.referredUsersList.innerHTML = referredUsers.map(user => 
+                    `<li class="flex justify-between py-1 text-gray-300 border-b border-gray-800 last:border-b-0">
+                        <span>${user.username}</span>
+                        <span class="primary-green font-medium">+₦${REFERRAL_BONUS.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </li>`
+                ).join('');
+            }
+            // --- End Referral Modal Updates ---
+
+            // Enable/Disable Payout Button
+            PAYOUT_BUTTON.disabled = !canWithdraw;
+            PAYOUT_BUTTON.textContent = canWithdraw 
+                ? 'Cash Out Now' 
+                : `Minimum ₦${WITHDRAWAL_THRESHOLD.toLocaleString()} Required`;
+            
+            // Set referral link
+            const baseUrl = 'https://surepay.io/join'; 
+            REFERRAL_LINK_EL.value = `${baseUrl}?ref=${userId || 'loading'}`;
+        }
+
+        // --- AUTHENTICATION & INITIALIZATION (Unchanged) ---
+
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Authenticated with user ID:", userId);
+                        WELCOME_EL.textContent = `Welcome, User ${userId.substring(0, 4)}...`;
+                        
+                        await setupUserData();
+                    } else {
+                        console.log("No user found. Attempting sign in...");
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Error during Firebase initialization:", e);
+                WELCOME_EL.textContent = 'Error loading dashboard.';
+            }
+        }
+
+        async function setupUserData() {
+            const userDocRef = doc(db, 'users', userId);
+
+            // Initial data structure for new users
+            const initialData = {
+                availableToWithdraw: 0.00,
+                pendingBalance: 3250.00,
+                lifetimePayouts: 0.00,
+                adEngagements: 0,
+                referralBalance: 0.00, // New field
+                referredUsers: [], // New field
+                createdAt: new Date().toISOString(),
+                username: `User-${userId.substring(0, 6)}` // Mock username
+            };
+
+            await setDoc(userDocRef, initialData, { merge: true });
+
+            // Set up real-time listener for user data
+            onSnapshot(userDocRef, (doc) => {
+                if (doc.exists()) {
+                    console.log("Current data:", doc.data());
+                    updateMetrics(doc.data());
+                } else {
+                    console.log("No user document found, using initial data.");
+                    updateMetrics(initialData);
+                }
+            });
+        }
+        
+        // --- TASK & EARNINGS FUNCTIONS (Unchanged) ---
+
+        window.startTask = async function(button, amount, type) {
+            if (!userId) {
+                alert('Please wait for the dashboard to load.');
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Working...';
+
+            await new Promise(resolve => setTimeout(resolve, 2000)); 
+
+            try {
+                const userDocRef = doc(db, 'users', userId);
+                await updateDoc(userDocRef, {
+                    availableToWithdraw: increment(amount),
+                    pendingBalance: increment(-amount), 
+                    adEngagements: increment(1)
+                });
+
+                // --- Referral Confirmation Mock ---
+                // Only reward the referrer the first time a user completes a task.
+                if (type === 'survey') {
+                    await checkAndRewardReferral(userId);
+                }
+                // --- End Referral Mock ---
+
+                button.textContent = 'Completed!';
+                
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Start';
+                }, 3000); 
+
+            } catch (e) {
+                console.error("Error completing task:", e);
+                button.textContent = 'Error';
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Start';
+                }, 3000);
+            }
+        };
+
+        // New function: Checks for a pending referral status and rewards the referrer
+        async function checkAndRewardReferral(currentUserId) {
+             // Mock logic: Assume the user was referred by 'mock-referrer-123' and this is the first task.
+             const MOCK_REFERRER_ID = 'mock-referrer-123';
+             const MOCK_REFERRED_USERNAME = `User-${currentUserId.substring(0, 6)}`;
+
+             // Prevent self-referral (or if the mock referrer has already been rewarded)
+             if (currentUserId !== MOCK_REFERRER_ID) {
+                const referrerDocRef = doc(db, 'users', MOCK_REFERRER_ID);
+                
+                // Real-world logic would involve a server check for a unique referral completion record.
+                // Here, we simulate the update on the referrer's account.
+                
+                await updateDoc(referrerDocRef, {
+                    availableToWithdraw: increment(REFERRAL_BONUS),
+                    referralBalance: increment(REFERRAL_BONUS), // NEW: Update dedicated referral balance
+                    referredUsers: [
+                        { username: MOCK_REFERRED_USERNAME, date: new Date().toISOString() }, 
+                        ...[] // Append new referral to the existing array (in a real app, you would use arrayUnion)
+                    ]
+                });
+                console.log(`Awarded ₦${REFERRAL_BONUS} to mock referrer for successful referral of ${MOCK_REFERRED_USERNAME}.`);
+             }
+        }
+        
+        // --- PAYOUT MODAL FUNCTIONS (UPDATED Multi-Step Logic) ---
+
+        window.openModal = function() { PAYOUT_MODAL.classList.remove('hidden'); };
+
+        window.closeModal = function() { 
+            PAYOUT_MODAL.classList.add('hidden');
+            // Reset to Step 1 for next attempt
+            PAYOUT_METHOD_STEP.classList.remove('hidden');
+            PAYOUT_DETAILS_STEP.classList.add('hidden'); 
+            MODAL_TITLE.textContent = 'Confirm Payout';
+            MODAL_STATUS.classList.add('hidden');
+            // Ensure actions are visible on next open if it wasn't a final success screen
+            document.getElementById('modalActions').classList.remove('hidden'); 
+        };
+
+        window.handlePayoutAttempt = function() {
+            if (currentEarnings < WITHDRAWAL_THRESHOLD) {
+                // Denial logic could be inserted here if needed
+                MODAL_TITLE.textContent = 'Withdrawal Denied';
+                MODAL_MESSAGE.innerHTML = `Minimum withdrawal amount is **₦${WITHDRAWAL_THRESHOLD.toLocaleString()}**. Keep working!`;
+                PAYOUT_METHOD_CONTAINER.classList.add('hidden');
+                document.getElementById('nextStepActions').classList.add('hidden'); // Hide next/cancel buttons
+            } else {
+                MODAL_TITLE.textContent = 'Confirm Payout';
+                const formattedEarnings = formatCurrency(currentEarnings);
+                PAYOUT_AMOUNT_EL.textContent = formattedEarnings;
+                PAYOUT_AMOUNT_EL2.textContent = currentEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                MODAL_MESSAGE.innerHTML = `Are you sure you want to withdraw your current earnings of <span id="payoutAmount" class="font-bold text-lg primary-green">${formattedEarnings}</span>?`;
+                
+                // Ensure we start at Step 1 and buttons are visible
+                PAYOUT_METHOD_CONTAINER.classList.remove('hidden');
+                document.getElementById('nextStepActions').classList.remove('hidden'); 
+                PAYOUT_METHOD_STEP.classList.remove('hidden');
+                PAYOUT_DETAILS_STEP.classList.add('hidden');
+                document.getElementById('modalActions').classList.remove('hidden');
+            }
+            openModal();
+        };
+
+        window.goToDetailsStep = function() {
+            const selectedMethod = PAYOUT_METHOD_SELECT.value;
+
+            // Update the Details Step UI based on the selected method
+            SELECTED_METHOD_DISPLAY.textContent = selectedMethod;
+
+            if (selectedMethod.includes('PayPal')) {
+                // Option 1: PayPal
+                ACCOUNT_LABEL.textContent = 'PayPal Email Address:';
+                DETAILS_LABEL.textContent = 'Confirm PayPal Email:';
+                ACCOUNT_INPUT.placeholder = 'your.email@example.com';
+                DETAILS_INPUT.placeholder = 'your.email@example.com';
+            } else if (selectedMethod.includes('Bank Transfer')) {
+                // Option 2: Bank Transfer (Naira Focus)
+                ACCOUNT_LABEL.textContent = 'Account Name (As registered in bank):';
+                DETAILS_LABEL.textContent = 'Account Number & Bank Name:';
+                ACCOUNT_INPUT.placeholder = 'e.g., John Doe Chukwu';
+                DETAILS_INPUT.placeholder = 'e.g., 0123456789 (First Bank)';
+            }
+
+            // Transition to Step 2
+            PAYOUT_METHOD_STEP.classList.add('hidden');
+            PAYOUT_DETAILS_STEP.classList.remove('hidden');
+            MODAL_TITLE.textContent = 'Enter Payout Details';
+        };
+
+        window.goBackToMethodStep = function() {
+            PAYOUT_METHOD_STEP.classList.remove('hidden');
+            PAYOUT_DETAILS_STEP.classList.add('hidden');
+            MODAL_TITLE.textContent = 'Confirm Payout';
+        };
+
+
+        window.confirmPayout = async function() {
+            if (!userId) return alert('User not authenticated.');
+
+            const accountDetail = ACCOUNT_INPUT.value.trim();
+            const otherDetail = DETAILS_INPUT.value.trim();
+            const method = PAYOUT_METHOD_SELECT.value;
+
+            if (!accountDetail || !otherDetail) {
+                alert('Please fill in all required account details.');
+                return;
+            }
+
+            // --- VALIDATION CHECK FOR NAIRA BANK TRANSFER ---
+            if (method.includes('Bank Transfer')) {
+                // Find the first sequence of 10 consecutive digits
+                const accountNumberMatch = otherDetail.match(/\d{10}/);
+                
+                if (!accountNumberMatch) {
+                    alert('Invalid Bank Transfer details. Please ensure you enter a 10-digit Account Number followed by the Bank Name (e.g., 0123456789 (Access Bank)).');
+                    return;
+                }
+                
+                const accountNumber = accountNumberMatch[0];
+
+                if (accountNumber.length !== 10) {
+                    alert('The Account Number must be exactly 10 digits long for Bank Transfer. Please correct the details.');
+                    return;
+                }
+                // Optional: If you only want the 10-digit number and not the bank name:
+                // const bankDetailsToSend = { accountName: accountDetail, accountNumber: accountNumber };
+            }
+            // --- END VALIDATION CHECK ---
+
+            CONFIRM_BTN.disabled = true;
+            CONFIRM_BTN.textContent = 'Processing...';
+
+            // --- MOCK PAYOUT PROCESS START ---
+            
+            // 1. Simulate server-side logging and submission to the mock email
+            console.log(`Submitting Payout Request to ${PAYOUT_EMAIL}:`);
+            console.log(`- Amount: ${formatCurrency(currentEarnings)}`);
+            console.log(`- Method: ${method}`);
+            console.log(`- Account Detail: ${accountDetail}`); // Account Name/Email
+            console.log(`- Other Detail: ${otherDetail}`); // Account No. & Bank / Confirm Email
+
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+
+            try {
+                const userDocRef = doc(db, 'users', userId);
+                
+                // 2. Perform the Firebase update (resetting available balance)
+                await updateDoc(userDocRef, {
+                    availableToWithdraw: increment(-currentEarnings),
+                    lifetimePayouts: increment(currentEarnings),
+                });
+
+                // 3. Display Success Status
+                MODAL_TITLE.textContent = 'Payout Successful!';
+                PAYOUT_DETAILS_STEP.classList.add('hidden');
+                MODAL_STATUS.textContent = `Success! Your request for ${formatCurrency(currentEarnings)} via ${method} has been submitted. Check your registered email for confirmation from ${PAYOUT_EMAIL}.`;
+                MODAL_STATUS.classList.remove('hidden', 'bg-red-900', 'text-red-300');
+                MODAL_STATUS.classList.add('bg-green-900', 'text-green-300');
+
+            } catch (e) {
+                console.error("Error during payout:", e);
+                MODAL_TITLE.textContent = 'Payout Failed!';
+                MODAL_STATUS.textContent = `Error processing your request: ${e.message}. Please try again later.`;
+                MODAL_STATUS.classList.remove('hidden', 'bg-green-900', 'text-green-300');
+                MODAL_STATUS.classList.add('bg-red-900', 'text-red-300');
+            } finally {
+                // Prepare for the user to close the modal
+                CONFIRM_BTN.disabled = false;
+                CONFIRM_BTN.textContent = 'Confirm Withdraw';
+                // Hide the actions and show only the status
+                document.getElementById('modalActions').classList.add('hidden');
+            }
+        };
+
+        // --- REFERRAL MODAL FUNCTIONS (Unchanged) ---
+
+        window.openReferralModal = function() {
+            if (userId) {
+                const baseUrl = 'https://surepay.io/join'; 
+                REFERRAL_LINK_EL.value = `${baseUrl}?ref=${userId}`;
+            }
+            // Trigger updateMetrics before opening to ensure list/balance is current
+            // (Assuming this function is called after data is loaded via onSnapshot)
+            REFERRAL_MODAL.classList.remove('hidden');
+        };
+
+        window.closeReferralModal = function() {
+            REFERRAL_MODAL.classList.add('hidden');
+            COPY_BTN_TEXT.textContent = 'Copy';
+            COPY_BTN.disabled = false;
+            COPY_STATUS_EL.classList.add('hidden');
+        };
+
+        window.copyReferralLink = function() {
+            const link = REFERRAL_LINK_EL.value;
+            navigator.clipboard.writeText(link).then(() => {
+                COPY_BTN_TEXT.textContent = 'Copied!';
+                COPY_BTN.disabled = true;
+                COPY_STATUS_EL.classList.remove('hidden');
+                setTimeout(() => {
+                    COPY_BTN_TEXT.textContent = 'Copy';
+                    COPY_BTN.disabled = false;
+                    COPY_STATUS_EL.classList.add('hidden');
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                alert('Error copying link. Please copy it manually.');
+            });
+        };
+
+        // --- LOGOUT FUNCTION (Unchanged) ---
+
+        // Track completed social tasks to prevent duplicates
+        const completedSocialTasks = new Set();
+
+        // Social Media Tasks Dialog Functions
+        window.openSocialTasksDialog = function() {
+            document.getElementById('socialTasksDialog').classList.remove('hidden');
+            // Check for previously completed tasks
+            ['facebook', 'tiktok', 'instagram', 'youtube'].forEach(platform => {
+                if (completedSocialTasks.has(platform)) {
+                    const btn = document.getElementById(platform + 'Btn');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.textContent = 'Completed!';
+                    }
+                }
+            });
+        };
+
+        window.closeSocialTasksDialog = function() {
+            const dialog = document.getElementById('socialTasksDialog');
+            if (!dialog) return;
+            dialog.classList.add('hidden');
+        };
+
+        // Close dialog when clicking outside
+        document.addEventListener('click', function(event) {
+            const dialog = document.getElementById('socialTasksDialog');
+            const dialogContent = dialog?.querySelector('.card');
+            if (dialog && !dialog.classList.contains('hidden') && event.target === dialog) {
+                closeSocialTasksDialog();
+            }
+        });
+
+        window.submitSocialTask = async function(platform) {
+            if (!userId) {
+                alert('Please wait for the dashboard to load.');
+                return;
+            }
+
+            if (completedSocialTasks.has(platform)) {
+                alert('You have already completed this task.');
+                return;
+            }
+
+            const input = document.getElementById(platform + 'Input');
+            const submitBtn = document.getElementById(platform + 'Btn');
+            
+            if (!input || !submitBtn) {
+                console.error('Required elements not found');
+                return;
+            }
+
+            const value = input.value.trim();
+            if (!value) {
+                alert('Please enter the required information before verifying.');
+                return;
+            }
+
+            // Platform-specific validation for social media links
+            const validations = {
+                facebook: /facebook\.com\/.+/i,
+                tiktok: /tiktok\.com\/.+/i,
+                instagram: /instagram\.com\/.+/i,
+                youtube: /(youtube\.com|youtu\.be)\/.+/i
+            };
+
+            if (!validations[platform].test(value)) {
+                alert(`Please enter a valid ${platform} link to your interaction.`);
+                return;
+            }
+
+            // Disable input and button during verification
+            input.disabled = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying...';
+
+            try {
+                // Simulate verification delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                const userDocRef = doc(db, 'users', userId);
+                await updateDoc(userDocRef, {
+                    availableToWithdraw: increment(300.00), // ₦300 reward
+                    pendingBalance: increment(-300.00),
+                    adEngagements: increment(1)
+                });
+
+                // Mark task as completed
+                completedSocialTasks.add(platform);
+
+                // Update UI
+                submitBtn.textContent = 'Completed!';
+                
+                // Show success message with platform-specific confirmation
+                const messages = {
+                    facebook: 'We will verify your comment on our latest post.',
+                    tiktok: 'We will verify your duet video.',
+                    instagram: 'We will verify your tags on our post.',
+                    telegram: 'We will verify your message in our channel.'
+                };
+                
+                alert(`Task completed successfully! ₦300.00 has been added to your available balance.\n\n${messages[platform]}\n\nYou can complete other social media tasks for additional rewards.`);
+
+            } catch (error) {
+                console.error(`Error submitting ${platform} task:`, error);
+                alert('Error processing task. Please try again.');
+                submitBtn.textContent = 'Verify';
+                submitBtn.disabled = false;
+                input.disabled = false;
+            }
+        };
+
+        window.logout = async function() {
+            try {
+                await auth.signOut();
+                window.location.reload(); 
+            } catch (error) {
+                console.error("Error during logout:", error);
+            }
+        };
+
+        initializeFirebase();
+    </script>
+</body>
+</html>

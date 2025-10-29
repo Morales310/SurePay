@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sure Pay - Get Paid For Your Time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Custom animations for a smooth entrance */
+        @keyframes fadeInUpto {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUpto 0.8s ease-out forwards;
+            opacity: 0; /* Ensures it starts invisible */
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        /* Responsive helpers */
+        img { max-width: 100%; height: auto; display: block; }
+        .wrap { box-sizing: border-box; }
+
+        /* Improve hero responsiveness across devices */
+        .hero-content { max-width: 900px; margin: 0 auto; }
+
+        /* Make interactive elements accessible and touch-friendly on small screens */
+        @media (max-width: 640px) {
+            .container { padding-left: 1rem; padding-right: 1rem; }
+            header .container { padding-left: 0.75rem; padding-right: 0.75rem; }
+            .animate-fade-in-up { opacity: 1; } /* Avoid animation clipping on very small devices */
+            h1 { font-size: 1.75rem; line-height: 1.1; }
+            .text-4xl { font-size: 1.75rem; }
+            .text-5xl { font-size: 2rem; }
+            .text-6xl { font-size: 2.25rem; }
+            .py-24 { padding-top: 5rem; padding-bottom: 5rem; }
+            .py-32 { padding-top: 4rem; padding-bottom: 4rem; }
+            .grid-cols-1.md\:grid-cols-3 { grid-template-columns: 1fr; }
+            .shadow-xl { box-shadow: 0 8px 20px rgba(2,6,23,0.6); }
+            .container.mx-auto { width: 100%; }
+            .rounded-full { border-radius: 9999px; }
+            a.inline-block { width: 100%; padding-left: 1.25rem; padding-right: 1.25rem; }
+        }
+
+        /* Larger screens: slight spacing bumps */
+        @media (min-width: 1024px) {
+            .hero-content { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo - UPDATED: Using a placeholder <img> tag -->
+            <a href="#" class="flex items-center space-x-2 text-2xl font-extrabold text-green-700" aria-label="Sure Pay home">
+                <img 
+                    src="IMG-20251018-WA0004.jpg" 
+                    onerror="this.onerror=null;this.src='https://placehold.co/28x28/16a34a/ffffff?text=SP';" 
+                    alt="Sure Pay Logo" 
+                    class="w-7 h-7 rounded-full object-cover"
+                >
+                <span>Sure Pay</span>
+            </a>
+            
+            <!-- Desktop Navigation Links -->
+            <nav class="hidden md:flex space-x-8 items-center">
+                <a href="#features" class="text-gray-600 hover:text-green-600 font-medium transition duration-150">How It Works</a>
+                <a href="#payouts" class="text-gray-600 hover:text-green-600 font-medium transition duration-150">Payouts</a>
+                <a href="#footer" class="text-gray-600 hover:text-green-600 font-medium transition duration-150">Support</a>
+                <a href="signup.html" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-full shadow-md transition duration-300 transform hover:scale-105">
+                    Sign Up Free
+                </a>
+            </nav>
+            
+            <!-- Mobile Menu Button (Hamburger) -->
+            <button id="mobile-menu-button" aria-controls="mobile-menu" aria-expanded="false" class="md:hidden text-gray-700 hover:text-green-600 focus:outline-none p-2 rounded-md transition duration-150">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100">
+            <nav class="flex flex-col space-y-1 p-4">
+                <a href="#features" class="block text-gray-700 hover:bg-green-50 px-3 py-2 rounded-md font-medium">How It Works</a>
+                <a href="#payouts" class="block text-gray-700 hover:bg-green-50 px-3 py-2 rounded-md font-medium">Payouts</a>
+                <a href="#footer" class="block text-gray-700 hover:bg-green-50 px-3 py-2 rounded-md font-medium">Support</a>
+                <a href="signup.html" class="block text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-full mt-2 transition duration-300">Sign Up Free</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section (Based on User's input) -->
+    <section class="relative bg-green-900 text-white py-24 md:py-32">
+        <div class="absolute inset-0">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 bg-cover bg-center" 
+                style="background-image: url('https://images.unsplash.com/photo-1542831371-29b013445584?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+            </div>
+            <!-- Green-toned overlay -->
+            <div class="absolute inset-0 bg-green-900 opacity-70"></div>
+        </div>
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <!-- Text Refinement -->
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4 animate-fade-in-up">
+                Turn Your Time Into Cash, Simply and Instantly.
+            </h1>
+            <p class="text-lg md:text-xl text-green-200 mb-8 max-w-2xl mx-auto animate-fade-in-up delay-100">
+                Convert your free moments into real income. Engage with quick surveys, video ads, and simple digital tasks.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fade-in-up delay-200">
+                <a href="signup.html" class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-xl transition duration-300 transform hover:scale-105">
+                    Sign Up Now
+                </a>
+                <a href="#features" class="inline-block bg-transparent border-2 border-white hover:bg-white hover:text-green-900 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works / Features Section -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-extrabold text-green-900 mb-4">Simple Steps, Real Rewards</h2>
+            <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+                Getting started is effortless. Follow our three quick steps to unlock earning potential.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                
+                <!-- Feature 1: Sign Up -->
+                <div class="p-8 bg-white rounded-xl shadow-xl transition duration-300 hover:shadow-2xl border-t-4 border-green-500 animate-fade-in-up delay-300">
+                    <div class="text-5xl text-green-600 font-extrabold mb-4">1</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Quick & Secure Sign Up</h3>
+                    <p class="text-gray-500">Create your free account in less than a minute. We keep your data safe and private with bank-level encryption.</p>
+                </div>
+                
+                <!-- Feature 2: Complete Tasks -->
+                <div class="p-8 bg-white rounded-xl shadow-xl transition duration-300 hover:shadow-2xl border-t-4 border-green-500 animate-fade-in-up delay-400">
+                    <div class="text-5xl text-green-600 font-extrabold mb-4">2</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Engage with High-Value Tasks</h3>
+                    <p class="text-gray-500">Choose from hundreds of tasks: quick surveys, app reviews, and video watching. Do it anytime, anywhere.</p>
+                </div>
+                
+                <!-- Feature 3: Cash Out -->
+                <div id="payouts" class="p-8 bg-white rounded-xl shadow-xl transition duration-300 hover:shadow-2xl border-t-4 border-green-500 animate-fade-in-up delay-500">
+                    <div class="text-5xl text-green-600 font-extrabold mb-4">3</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Fast Payouts, Low Threshold</h3>
+                    <p class="text-gray-500">Withdraw your earnings directly to PayPal, bank transfer, or gift cards. Enjoy **fast transfers** with a **minimal payout threshold.**</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Simple Footer -->
+    <footer id="footer" class="bg-gray-800 text-white py-10">
+        <div class="container mx-auto px-4 text-center">
+            <a href="#" class="flex items-center space-x-2 text-2xl font-extrabold text-green-600 mx-auto w-max mb-6">
+                <img 
+                    src="IMG-20251018-WA0004.jpg" 
+                    onerror="this.onerror=null;this.src='https://placehold.co/28x28/16a34a/ffffff?text=Logo';" 
+                    alt="Sure Pay Logo" 
+                    class="w-7 h-7 rounded-full object-cover"
+                >
+                <span>Sure Pay</span>
+            </a>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" class="text-gray-400 hover:text-white transition duration-150">Terms of Service</a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-150">Privacy Policy</a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-150">FAQ</a>
+            </div>
+            <p class="text-gray-500 text-sm">&copy; 2025 Sure Pay. All rights reserved. Turning clicks into cash.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Mobile Menu Toggle (with aria updates and smooth transition) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            // Toggle menu visibility and update aria-expanded
+            menuButton.addEventListener('click', function() {
+                const isHidden = mobileMenu.classList.toggle('hidden');
+                // If hidden then true else false (we want aria-expanded true when menu open)
+                const expanded = !mobileMenu.classList.contains('hidden');
+                menuButton.setAttribute('aria-expanded', expanded);
+            });
+
+            // Close menu if a link is clicked
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuButton.setAttribute('aria-expanded', false);
+                });
+            });
+
+            // Close mobile menu on Escape key for accessibility
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    menuButton.setAttribute('aria-expanded', false);
+                    menuButton.focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
