@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Sign in — SurePay</title>
     <meta name="description" content="Sign in to your SurePay account" />
+    <meta name="google-adsense-account" content="ca-pub-7847216634297943">
     <!-- Favicon (using provided SurePay image) -->
     <link rel="icon" href="IMG-20251018-WA0004.jpg" type="image/jpeg">
     <link rel="shortcut icon" href="IMG-20251018-WA0004.jpg">
     <link rel="apple-touch-icon" href="IMG-20251018-WA0004.jpg">
     <meta name="theme-color" content="#059669">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943"
+     crossorigin="anonymous"></script>
+
     <style>
         /* Define Dark Mode Variables */
         :root{
@@ -326,39 +331,127 @@
             }
 
             // --- Form Submission Handler ---
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                // Run client-side validation
-                if(!validate()) return;
+                // Clear any existing errors first
+                showError(emailError, '');
+                showError(pwError, '');
                 
-                // Disable button and show loading state
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Signing in...';
+                // Run enhanced client-side validation
+                if(!validate()) {
+                    // Focus the first invalid field
+                    const firstInvalid = form.querySelector('[aria-invalid="true"]');
+                    if (firstInvalid) firstInvalid.focus();
+                    return;
+                }
                 
-                // --- Simulate network request / successful sign-in ---
-                setTimeout(() => {
-                    // Log the successful attempt (replaces alert)
+                // Disable form elements during submission
+                const formElements = form.querySelectorAll('input, button');
+                formElements.forEach(el => el.disabled = true);
+                
+                // Show loading state with spinner
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right: 8px;">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2">
+                            <animateTransform attributeName="transform" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite"/>
+                        </circle>
+                    </svg>
+                    Signing in...`;
+                
+                try {
+                    // Simulate API call with artificial delay
+                    await new Promise(resolve => setTimeout(resolve, 900));
+                    
+                    // Log successful attempt
                     console.log('Successfully signed in as:', email.value);
                     
-                    // Redirect upon successful sign-in
-                    window.location.href = 'main.html';
+                    // Redirect to main page
+                    window.location.href = 'main.html?source=email';
                     
-                    // If, for any reason, the page doesn't redirect, reset the button state
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sign in';
-                }, 900);
+                } catch (error) {
+                    // Show error message
+                    showError(emailError, 'Failed to sign in. Please try again.');
+                    
+                    // Reset form state
+                    formElements.forEach(el => el.disabled = false);
+                    submitBtn.innerHTML = originalBtnText;
+                    
+                    // Focus email field for retry
+                    email.focus();
+                }
             });
 
             // Accessibility: validate on blur for quick feedback
             email.addEventListener('blur', validate);
             pw.addEventListener('blur', validate);
 
-            // --- Social Sign-in Placeholder ---
-            window.socialSign = function(provider){
-                // Placeholder: console log for simulated OAuth flow (replaces alert)
-                console.log('Starting sign in flow with ' + provider);
+            // --- Social Sign-in Implementation ---
+            window.socialSign = function(provider) {
+                const googleBtn = document.querySelector('button[aria-label="Sign in with Google"]');
+                const githubBtn = document.querySelector('button[aria-label="Sign in with GitHub"]');
+                const button = provider === 'Google' ? googleBtn : githubBtn;
+                const originalContent = button.innerHTML;
+
+                // Disable both buttons during sign-in
+                googleBtn.disabled = true;
+                githubBtn.disabled = true;
+
+                // Show loading state
+                button.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2">
+                            <animateTransform attributeName="transform" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite"/>
+                        </circle>
+                    </svg>
+                    Connecting...`;
+
+                // Simulate OAuth flow
+                setTimeout(() => {
+                    console.log(`Successfully signed in with ${provider}`);
+                    // Redirect with provider source
+                    window.location.href = `main.html?source=${provider.toLowerCase()}`;
+
+                    // Reset button state if redirect fails
+                    button.disabled = false;
+                    button.innerHTML = originalContent;
+                    googleBtn.disabled = false;
+                    githubBtn.disabled = false;
+                }, 1000);
             };
+
+            // --- Form Validation Enhancement ---
+            function validateField(input, errorEl, rules) {
+                const value = input.value.trim();
+                let error = '';
+
+                if (!value) {
+                    error = `${input.labels[0].textContent} is required.`;
+                } else if (rules.pattern && !rules.pattern.test(value)) {
+                    error = rules.message;
+                } else if (rules.minLength && value.length < rules.minLength) {
+                    error = `${input.labels[0].textContent} must be at least ${rules.minLength} characters.`;
+                }
+
+                showError(errorEl, error);
+                input.setAttribute('aria-invalid', error ? 'true' : 'false');
+                return !error;
+            }
+
+            // Enhance validation with better rules
+            function validate() {
+                const emailValid = validateField(email, emailError, {
+                    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: 'Please enter a valid email address.'
+                });
+
+                const pwValid = validateField(pw, pwError, {
+                    minLength: 8
+                });
+
+                return emailValid && pwValid;
+            }
         })();
     </script>
 </body>

@@ -4,11 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>SurePay — Sign up</title>
+    <meta name="google-adsense-account" content="ca-pub-7847216634297943">
     <meta name="description" content="Create your SurePay account" />
     <link rel="icon" href="IMG-20251018-WA0004.jpg" type="image/jpeg">
     <link rel="shortcut icon" href="IMG-20251018-WA0004.jpg">
     <link rel="apple-touch-icon" href="IMG-20251018-WA0004.jpg">
     <meta name="theme-color" content="#059669">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943"
+     crossorigin="anonymous"></script>
 
     <style>
         /* Define Dark Mode Variables */
@@ -102,6 +106,29 @@
             text-decoration: underline;
         }
 
+        /* Social Buttons */
+        .social{display:grid; gap:10px; margin-top:10px}
+        .social button{
+            display:flex; gap:10px; align-items:center; justify-content:center; 
+            padding:12px; width:100%;
+            border-radius:10px; 
+            border:1px solid var(--input-border); 
+            background:var(--input-bg); /* Darker background for social buttons */
+            color: var(--primary-text);
+            cursor:pointer;
+            font-weight: 500;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .social button:hover {
+            background: #3a3a3a;
+            border-color: #555555;
+        }
+        .social button svg:first-child circle {
+            /* Google icon circle stroke on dark mode */
+            stroke: #333333; 
+        }
+        .helper{font-size:14px; color:var(--muted); text-align:center; margin-top:14px}
+        
         .note{font-size:0.85rem; color:var(--muted); opacity: 0.7; margin-top:0.25rem}
         .error{color:var(--error-color); font-size:0.85rem; margin-top:0.25rem}
         .footer{font-size:0.85rem; text-align:center; color:var(--muted); margin-top:1.5rem}
@@ -133,6 +160,20 @@
             <h1>Get started with SurePay</h1>
             <p class="lead">Create your account to manage payments securely.</p>
         </header>
+
+        <div class="social">
+            <button type="button" id="googleSignIn" onclick="handleGoogleSignIn()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M23.04 12.2614C23.04 11.4459 22.9668 10.6618 22.8309 9.90909H12V14.3575H18.1891C17.9225 15.795 17.1123 17.013 15.8943 17.8284V20.7139H19.6109C21.7855 18.7118 23.04 15.7636 23.04 12.2614Z" fill="#4285F4"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 23.4998C15.105 23.4998 17.7081 22.4701 19.6109 20.7137L15.8943 17.8282C14.8645 18.5182 13.5472 18.9259 12 18.9259C9.00474 18.9259 6.46951 16.903 5.56519 14.1848H1.72314V17.1644C3.61542 20.9228 7.50451 23.4998 12 23.4998Z" fill="#34A853"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.56523 14.1851C5.33523 13.4951 5.20455 12.7581 5.20455 12.0001C5.20455 11.2421 5.33523 10.5051 5.56523 9.81506V6.83551H1.72318C0.944318 8.38801 0.5 10.1444 0.5 12.0001C0.5 13.8557 0.944318 15.6121 1.72318 17.1646L5.56523 14.1851Z" fill="#FBBC05"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 5.07386C13.6884 5.07386 15.2043 5.65409 16.3961 6.79364L19.6945 3.49523C17.7029 1.63955 15.0997 0.5 12 0.5C7.50451 0.5 3.61542 3.077 1.72314 6.83545L5.56519 9.815C6.46951 7.09682 9.00474 5.07386 12 5.07386Z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+            </button>
+        </div>
+        
+        <div class="helper">or create an account with email</div>
 
         <form id="signupForm" autocomplete="on" novalidate>
             <div class="row">
@@ -185,6 +226,38 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Google Sign In Handler
+        function handleGoogleSignIn() {
+            const googleBtn = document.getElementById('googleSignIn');
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = `
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4">
+                        <animateTransform attributeName="transform" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+                Connecting...
+            `;
+
+            // Simulate Google sign-in process
+            setTimeout(() => {
+                // On success, redirect to main page
+                window.location.href = 'main.html?source=google';
+                
+                // Reset button state if redirect fails
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M23.04 12.2614C23.04 11.4459 22.9668 10.6618 22.8309 9.90909H12V14.3575H18.1891C17.9225 15.795 17.1123 17.013 15.8943 17.8284V20.7139H19.6109C21.7855 18.7118 23.04 15.7636 23.04 12.2614Z" fill="#4285F4"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 23.4998C15.105 23.4998 17.7081 22.4701 19.6109 20.7137L15.8943 17.8282C14.8645 18.5182 13.5472 18.9259 12 18.9259C9.00474 18.9259 6.46951 16.903 5.56519 14.1848H1.72314V17.1644C3.61542 20.9228 7.50451 23.4998 12 23.4998Z" fill="#34A853"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M5.56523 14.1851C5.33523 13.4951 5.20455 12.7581 5.20455 12.0001C5.20455 11.2421 5.33523 10.5051 5.56523 9.81506V6.83551H1.72318C0.944318 8.38801 0.5 10.1444 0.5 12.0001C0.5 13.8557 0.944318 15.6121 1.72318 17.1646L5.56523 14.1851Z" fill="#FBBC05"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 5.07386C13.6884 5.07386 15.2043 5.65409 16.3961 6.79364L19.6945 3.49523C17.7029 1.63955 15.0997 0.5 12 0.5C7.50451 0.5 3.61542 3.077 1.72314 6.83545L5.56519 9.815C6.46951 7.09682 9.00474 5.07386 12 5.07386Z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                `;
+            }, 1000);
+        }
     </script>
     <!-- 
         We are keeping the original JavaScript logic for form validation and simulated submission.
