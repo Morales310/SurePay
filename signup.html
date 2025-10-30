@@ -4,15 +4,31 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>SurePay — Sign up</title>
+    <meta name="description" content="Create your SurePay account and start earning rewards. Simple signup process with secure authentication options." />
     <meta name="google-adsense-account" content="ca-pub-7847216634297943">
-    <meta name="description" content="Create your SurePay account" />
+    
     <link rel="icon" href="IMG-20251018-WA0004.jpg" type="image/jpeg">
     <link rel="shortcut icon" href="IMG-20251018-WA0004.jpg">
     <link rel="apple-touch-icon" href="IMG-20251018-WA0004.jpg">
     <meta name="theme-color" content="#059669">
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943"
-     crossorigin="anonymous"></script>
+    
+    <!-- Schema.org markup for better SEO and AdSense crawling -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SurePay Sign Up",
+      "description": "Create your SurePay account and start earning rewards. Simple signup process with secure authentication options.",
+      "url": "https://surepay.com/signup.html",
+      "potentialAction": {
+        "@type": "RegisterAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://surepay.com/signup.html"
+        }
+      }
+    }
+    </script>
 
     <style>
         /* Define Dark Mode Variables */
@@ -237,13 +253,31 @@
                         <animateTransform attributeName="transform" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite"/>
                     </circle>
                 </svg>
-                Connecting...
+                Connecting to Google...
             `;
 
-            // Simulate Google sign-in process
+            // Simulate Google sign-in process with user info
             setTimeout(() => {
-                // On success, redirect to main page
-                window.location.href = 'main.html?source=google';
+                // Simulate getting user info from Google
+                // In a real implementation, this would come from the Google OAuth response
+                const mockGoogleResponse = {
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    email: 'john.doe@gmail.com',
+                    photoUrl: 'https://lh3.googleusercontent.com/photo'
+                };
+
+                // Construct the URL with all relevant information
+                const params = new URLSearchParams({
+                    firstName: mockGoogleResponse.firstName,
+                    lastName: mockGoogleResponse.lastName,
+                    email: mockGoogleResponse.email,
+                    source: 'google',
+                    photoUrl: mockGoogleResponse.photoUrl
+                });
+
+                // Redirect to main page with user info
+                window.location.href = `main.html?${params.toString()}`;
                 
                 // Reset button state if redirect fails
                 googleBtn.disabled = false;
@@ -257,6 +291,14 @@
                     Continue with Google
                 `;
             }, 1000);
+
+            // Optional: Add error handling
+            // setTimeout(() => {
+            //     if (/* error condition */) {
+            //         googleBtn.disabled = false;
+            //         googleBtn.innerHTML = 'Error connecting to Google';
+            //     }
+            // }, 5000);
         }
     </script>
     <!-- 
@@ -329,6 +371,20 @@
                 }, 800);
             });
         })();
+    </script>
+
+    <!-- AdSense script placed at the end for better page load performance -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943"
+     crossorigin="anonymous"></script>
+    <!-- Ad unit placement -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-7847216634297943"
+         data-ad-slot="signup-footer"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
 </body>
 </html>

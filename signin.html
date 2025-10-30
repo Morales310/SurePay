@@ -4,16 +4,32 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Sign in — SurePay</title>
-    <meta name="description" content="Sign in to your SurePay account" />
+    <meta name="description" content="Sign in to your SurePay account securely. Access your dashboard to manage payments and earnings." />
     <meta name="google-adsense-account" content="ca-pub-7847216634297943">
+    
     <!-- Favicon (using provided SurePay image) -->
     <link rel="icon" href="IMG-20251018-WA0004.jpg" type="image/jpeg">
     <link rel="shortcut icon" href="IMG-20251018-WA0004.jpg">
     <link rel="apple-touch-icon" href="IMG-20251018-WA0004.jpg">
     <meta name="theme-color" content="#059669">
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943"
-     crossorigin="anonymous"></script>
+    
+    <!-- Schema.org markup for better SEO and AdSense crawling -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SurePay Sign In",
+      "description": "Sign in to your SurePay account securely. Access your dashboard to manage payments and earnings.",
+      "url": "https://surepay.com/signin.html",
+      "potentialAction": {
+        "@type": "LoginAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://surepay.com/signin.html"
+        }
+      }
+    }
+    </script>
 
     <style>
         /* Define Dark Mode Variables */
@@ -453,6 +469,20 @@
                 return emailValid && pwValid;
             }
         })();
+    </script>
+
+    <!-- AdSense script placed at the end for better page load performance -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7847216634297943"
+     crossorigin="anonymous"></script>
+    <!-- Ad unit placement -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-7847216634297943"
+         data-ad-slot="signin-footer"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
 </body>
 </html>
